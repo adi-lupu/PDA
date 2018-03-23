@@ -1,1 +1,127 @@
+public class Producator extends Thread 
+{
+	private Produs copieProdus;
+	int i = 0;
+	
+	public Producator(Produs produs)
+	{ 
+		copieProdus = produs;  
+	}
+	
+	public void run()
+	{
+		for(;;)
+		{ 
+			copieProdus.set(i);
+			
+			i++;
+			
+			try
+			{
+				sleep(300);
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Exceptie producator");
+			}
+		}
+	}
+}
 
+
+
+public class Consumator extends Thread
+{
+	private Produs copieProdus;
+	 
+	public Consumator(Produs produs)
+	{
+		copieProdus = produs;
+	}
+	 
+	public void run()
+	{
+		
+		for(;;)
+		{
+			copieProdus.get();
+			
+			try
+			{
+				sleep(1000);
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Exceptie Consumator");
+			}
+	   }
+	}
+}
+
+
+public class Produs 
+{
+	private boolean available = false;
+	private int container = -1;
+	 
+	public synchronized void set(int valoare)
+	{
+		while(available == true)
+		{
+			try
+			{
+				wait(2500); 
+				
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Eroare set");
+			}
+		}
+		
+		available = true;
+		
+		container = valoare;
+		
+		System.out.println("Setare produs: " + container);
+		
+		notifyAll();
+	}
+	
+	public synchronized int get()
+	{
+		while(available == false)
+		{
+			try
+			{
+				wait(2500);
+			}
+			catch(Exception ex)
+			{
+				System.out.println("Eroare get");
+			}
+		}
+		
+		available = false;
+	  
+		System.out.println("Consumare produs: "+container);
+	  
+		notifyAll();
+	  
+		return container;
+	 }
+}
+
+
+public class MainFunction
+{
+	 public static void main(String[] args)
+	 {
+		 Produs produs = new Produs();	 
+		 Consumator consumator = new Consumator(produs);
+		 Producator producator = new Producator(produs);
+		 
+		 producator.start();
+		 consumator.start();
+	 }
+}
