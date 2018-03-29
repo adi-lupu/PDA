@@ -1,0 +1,69 @@
+#include<iostream>
+#include<thread>
+#include<vector>
+#include<mutex>
+
+using namespace std;
+
+#define MAXSIZE 100
+#define MAXTHREADS 10
+#define PRODUCT 1
+
+mutex Mutex;
+vector<int> v;
+int i = MAXTHREADS, item;
+
+void producator()
+{
+	while(1)
+	{
+		item = produce();
+
+		while(v.size() == MAXSIZE)
+		{
+			prodCond.wait();
+		}
+
+        v.push_back(item);
+
+		consCond.notifyAll();
+	}
+}
+
+void consumator()
+{
+	while(1)
+	{
+		while(v.size() == 0)
+		{
+			consCond.wait();
+		}
+
+        item = v.pop_back();
+
+		prodCond.notifyAll();
+
+		consume(item);
+	}
+}
+
+int main()
+{
+	thread prod[MAXTHREADS], cons[MAXTHREADS];
+
+	while(i--)
+    {
+        prod[i] = thread(producator);
+        cons[i] = thread(consumator);
+    }
+
+    i = MAXTHREADS;
+
+    while(i--)
+    {
+        prod[i].join();
+        cons[i].join();
+    }
+
+	return 0;
+}
