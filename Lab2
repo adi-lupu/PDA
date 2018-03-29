@@ -1,7 +1,8 @@
-#include<iostream>
-#include<thread>
-#include<vector>
-#include<mutex>
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <condition_variable>
 
 using namespace std;
 
@@ -12,6 +13,7 @@ using namespace std;
 mutex Mutex;
 vector<int> v;
 int i = MAXTHREADS, item;
+condition_variable Prod_cv, Cons_cv;
 
 void producator()
 {
@@ -21,12 +23,12 @@ void producator()
 
 		while(v.size() == MAXSIZE)
 		{
-			prodCond.wait();
+			Prod_cv.wait();
 		}
 
         v.push_back(item);
 
-		consCond.notifyAll();
+		Cons_cv.notify_All();
 	}
 }
 
@@ -36,12 +38,12 @@ void consumator()
 	{
 		while(v.size() == 0)
 		{
-			consCond.wait();
+			Cons_cv.wait();
 		}
 
         item = v.pop_back();
 
-		prodCond.notifyAll();
+		Prod_cv.notify_All();
 
 		consume(item);
 	}
