@@ -1,0 +1,53 @@
+#include<iostream>
+#include<thread>
+#include<vector>
+#include<mutex>
+
+using namespace std;
+
+#define MAXSIZE 100
+#define PRODUCT 1
+
+mutex Mutex;
+vector<int> v;
+
+void producator()
+{
+	while(1)
+	{
+		Mutex.lock();
+
+		if (v.size() < MAXSIZE)
+		{
+			v.push_back(PRODUCT);
+		}
+
+		Mutex.unlock();
+	}
+}
+
+void consumator()
+{
+	while(1)
+	{
+		Mutex.lock();
+
+		if (v.size() != 0)
+		{			
+			v.pop_back(PRODUCT);
+		}
+
+		Mutex.unlock();
+	}
+}
+
+int main()
+{
+	thread Thread1(producator);
+	thread Thread2(consumator);
+
+	Thread1.join();
+	Thread2.join();
+	
+	return 0;
+}
