@@ -2,10 +2,10 @@
 #include<stdio.h>
 
 int mat[4][4] = { 0,6,4,1,
-				  8,0,7,3,
-				  2,9,0,6,
-				  4,1,8,0
-				};
+		  8,0,7,3
+		  2,9,0,6,
+		  4,1,8,0
+		};
 				
 int main(int argc, char* argv[])
 {
@@ -29,9 +29,6 @@ int main(int argc, char* argv[])
 			if(mat[rank][j] > mat[rank][k] + mat[k][j])
 				mat[rank][j] = mat[rank][k] + mat[k][j];
 		
-	
-	
-
 	for(int i = 0; i < 3; ++i)
 	{
 		for(int j = 0; j < 3; j++)	
