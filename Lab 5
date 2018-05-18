@@ -1,0 +1,62 @@
+/*Se pornesc n procese. Dorim sa determinam un proces lider. Procesele vor genera fiecare cate un numar aleator, x. Procesul lider
+va fi cel care a generat cel mai mare x. Daca cel mai mare x a fost generat de mai multe procese, acela cu rank-ul cel mai mare
+devine lider. Procesele vor comunica peer-to-peer pana cand fiecare proces a determinat liderul.*/
+
+#include "mpi.h"
+#include <stdio.h>
+#include<time.h>
+#include<Windows.h>
+
+int main(int argc, char* argv[])
+{
+	int nrProcess, procId, rc, buf_send[2], buf_receive[2], leader;
+	
+	MPI_Status status;
+	MPI_Request request;
+
+	rc = MPI_Init(&argc, &argv);
+	
+	if (rc != MPI_SUCCESS)
+	{
+		printf("Error starting MPI program. Terminating.\n");
+		
+		MPI_Abort(MPI_COMM_WORLD, rc);
+	}
+
+	MPI_Comm_size(MPI_COMM_WORLD, &nrProcess);
+	MPI_Comm_rank(MPI_COMM_WORLD, &procId);
+
+	leader = procId;
+
+	srand(procId*time(NULL));
+
+	int maxPriority = rand();
+
+	for (int i = 0; i < nrProcess; i++)
+	{
+		buf_send[0] = leader;
+		buf_send[1] = maxPriority;
+		
+		MPI_Isend(&buf_send, 2, MPI_INT, (procId + 1) % nrProcess, 0, MPI_COMM_WORLD, &request);
+		MPI_Recv(&buf_receive, 2, MPI_INT, (nrProcess + procId - 1) % nrProcess, 0, MPI_COMM_WORLD, &status);
+		
+		if (buf_receive[1] > maxPriority)
+		{
+			leader = buf_receive[0];
+			
+			maxPriority = buf_receive[1];
+
+		}
+		else 
+			if(buf_receive[1] == maxPriority && buf_receive[0] > procId)
+			{		
+				leader = buf_receive[0];
+				
+				maxPriority = buf_receive[1];	
+			}
+	}
+
+	MPI_Finalize();
+	
+	return 0;
+}
