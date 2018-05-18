@@ -10,16 +10,16 @@ devine lider. Procesele vor comunica peer-to-peer pana cand fiecare proces a det
 int main(int argc, char* argv[])
 {
 	int nrProcess, procId, rc, buf_send[2], buf_receive[2], leader;
-	
+
 	MPI_Status status;
 	MPI_Request request;
 
 	rc = MPI_Init(&argc, &argv);
-	
+
 	if (rc != MPI_SUCCESS)
 	{
 		printf("Error starting MPI program. Terminating.\n");
-		
+
 		MPI_Abort(MPI_COMM_WORLD, rc);
 	}
 
@@ -36,14 +36,14 @@ int main(int argc, char* argv[])
 	{
 		buf_send[0] = leader;
 		buf_send[1] = maxPriority;
-		
+
 		MPI_Isend(&buf_send, 2, MPI_INT, (procId + 1) % nrProcess, 0, MPI_COMM_WORLD, &request);
 		MPI_Recv(&buf_receive, 2, MPI_INT, (nrProcess + procId - 1) % nrProcess, 0, MPI_COMM_WORLD, &status);
-		
+
 		if (buf_receive[1] > maxPriority)
 		{
 			leader = buf_receive[0];
-			
+
 			maxPriority = buf_receive[1];
 
 		}
@@ -51,12 +51,12 @@ int main(int argc, char* argv[])
 			if(buf_receive[1] == maxPriority && buf_receive[0] > procId)
 			{		
 				leader = buf_receive[0];
-				
+
 				maxPriority = buf_receive[1];	
 			}
 	}
 
 	MPI_Finalize();
-	
+
 	return 0;
-}
+	}
