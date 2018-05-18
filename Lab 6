@@ -23,13 +23,34 @@ int main(int argc, char* argv[])
 
 	MPI_Comm_size(MPI_COMM_WORLD, &numtasks);   
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-	for(int i = 0; i < 3; i++)
-		for(int j = 0; j < 3; j++)
-			if(mat[rank][j] > mat[rank][k] + mat[k][j])
-				mat[rank][j] = mat[rank][k] + mat[k][j];
+	
+	if(rank == 0)
+	{
 		
-	for(int i = 0; i < 3; ++i)
+		for(int i = 0; i < 3; i++)
+			for(int j = 0; j < 3; j++)
+				if(mat[rank][j] > mat[rank][k] + mat[k][j])
+					mat[rank][j] = mat[rank][k] + mat[k][j];
+	
+		for(int i = 1; i < numtasks; i++)
+		{
+			MPI_Send(mat, 4, MPI_INT, i, 0, MPI_COMM_WORLD, &request);
+			MPI_Recv(mat, 4, MPI_INT, i, 0, MPI_COMM_WORLD, &status);
+		}
+	}
+	else
+	{
+		MPI_Recv(mat, 4, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+		
+		for(int i = 0; i < 3; i++)
+			for(int j = 0; j < 3; j++)
+				if(mat[rank][j] > mat[rank][k] + mat[k][j])
+					mat[rank][j] = mat[rank][k] + mat[k][j];
+		
+		MPI_Send(mat, 4, MPI_INT, 0, 0, MPI_COMM_WORLD, &request);
+	}
+		
+	for(int i = 0; i < 3; i++)
 	{
 		for(int j = 0; j < 3; j++)	
 			printf("%d", mat[i][j]);
